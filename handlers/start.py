@@ -69,7 +69,7 @@ async def choose_language(callback: CallbackQuery):
         ]
     ])
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         f"📘 <b>{course_name}</b>\n\nВыберите язык обучения:", reply_markup=kb
     )
     await callback.answer()
@@ -96,6 +96,7 @@ async def show_payment_info(callback: CallbackQuery):
     course_info = COURSES[course_name][lang]
     price_kgs = course_info["price"]
 
+    # Фиксированные цены в других валютах
     price_rub = {
         "АВА-терапия": 3200,
         "Дефектология": 2300,
