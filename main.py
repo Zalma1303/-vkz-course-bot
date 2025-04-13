@@ -8,8 +8,11 @@ from aiogram.types import BotCommand
 
 from config import BOT_TOKEN
 from handlers import start, payment
+from db import init_db  # подключаем БД
 
 async def main():
+    await init_db()  # инициализация таблицы
+
     bot = Bot(
         token=BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)

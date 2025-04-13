@@ -4,7 +4,7 @@ from aiogram import Router, F
 from aiogram.types import (
     Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 )
-
+from db import log_purchase
 from config import ADMIN_IDS, COURSES
 from handlers.start import user_selected_course  # импортируем выбор курса
 
@@ -56,6 +56,14 @@ async def approve_access(callback: CallbackQuery):
 
     if course_name and lang:
         link = COURSES[course_name][lang]["link"]
+        
+        await log_purchase(
+    user_id=user_id,
+    username=callback.from_user.username or "no_username",
+    course=course_name,
+    lang=lang,
+    confirmed_by=callback.from_user.username or "admin"
+)
         await callback.bot.send_message(
             user_id,
             f"✅ Ваш платёж подтверждён!\n\n"
