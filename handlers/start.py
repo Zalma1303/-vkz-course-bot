@@ -77,6 +77,68 @@ async def choose_language(callback: CallbackQuery):
     )
     await callback.answer()
 
+@router.callback_query(F.data.startswith("lang:"))
+async def show_payment_info(callback: CallbackQuery):
+    _, course_code, lang_code = callback.data.split(":")
+
+    course_reverse = {
+        "ava": "АВА-терапия",
+        "defekt": "Дефектология",
+        "sensor": "Сенсорная интеграция"
+    }
+
+    lang_reverse = {
+        "ru": "Русский",
+        "kg": "Кыргызский"
+    }
+
+    course_name = course_reverse[course_code]
+    lang = lang_reverse[lang_code]
+
+    course_info = COURSES[course_name][lang]
+    price_kgs = course_info["price"]
+
+    # Цены в других валютах
+    price_rub = {
+        "АВА-терапия": 3200,
+        "Дефектология": 2300,
+        "Сенсорная интеграция": 2800
+    }[course_name]
+
+    price_usd = {
+        "АВА-терапия": 40,
+        "Дефектология": 30,
+        "Сенсорная интеграция": 35
+    }[course_name]
+
+    user_selected_course[callback.from_user.id] = (course_name, lang)
+
+    qr_image = FSInputFile(QR_PATH)
+
+    caption = (
+        f"📘 <b>{course_name} ({lang})</b>\n\n"
+        f"💰 Стоимость курса:\n"
+        f"• <b>{price_kgs} сом</b> (Кыргызстан)\n"
+        f"• <b>{price_rub} ₽</b> (Россия)\n"
+        f"• <b>${price_usd}</b> (США и другие страны)\n\n"
+        "🌍 <b>Как оплатить:</b>\n"
+        "➤ Для России — перевод через ЮMoney\n"
+        "➤ Для Кыргызстана — MБанк (QR ниже)\n"
+        "➤ После оплаты — отправьте чек (фото / скрин)\n\n"
+        f"{DISCLAIMER}"
+    )
+
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🇷🇺 Оплатить через ЮMoney", url="https://yoomoney.ru/to/4100119099824929")],
+        [InlineKeyboardButton(text="📞 Поддержка: Алмаз (WhatsApp)", url="https://wa.me/996557555234")]
+    ])
+
+    await callback.message.answer_photo(
+        qr_image,
+        caption=caption,
+        reply_markup=kb
+    )
+    await callback.answer()
 
 @router.callback_query(F.data.startswith("lang:"))
 async def show_payment_info(callback: CallbackQuery):
