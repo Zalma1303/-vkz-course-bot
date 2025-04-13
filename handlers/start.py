@@ -21,8 +21,8 @@ DISCLAIMER = (
 async def start_handler(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔽 Выбрать курс", callback_data="select_course")],
-        [InlineKeyboardButton(text="ℹ️ О фонде", url="https://www.osoo.kg/inn/02104201110143/")],  # заменён на сайт фонда
-        [InlineKeyboardButton(text="📞 Поддержка: Алмаз (WhatsApp)", url="https://wa.me/996557555234")]  # WhatsApp-ссылка
+        [InlineKeyboardButton(text="ℹ️ О фонде", url="https://www.osoo.kg/inn/02104201110143/")],
+        [InlineKeyboardButton(text="📞 Поддержка: Алмаз (WhatsApp)", url="https://wa.me/996557555234")]
     ])
 
     await message.answer(
@@ -46,10 +46,7 @@ async def show_courses(callback: CallbackQuery):
         [InlineKeyboardButton(text="Дефектология", callback_data="course:Дефектология")],
         [InlineKeyboardButton(text="Сенсорная интеграция", callback_data="course:Сенсорная интеграция")]
     ])
-
-    await callback.message.edit_text(
-        "Выберите интересующий вас курс:", reply_markup=kb
-    )
+    await callback.message.edit_text("Выберите интересующий вас курс:", reply_markup=kb)
     await callback.answer()
 
 
@@ -77,6 +74,7 @@ async def choose_language(callback: CallbackQuery):
     )
     await callback.answer()
 
+
 @router.callback_query(F.data.startswith("lang:"))
 async def show_payment_info(callback: CallbackQuery):
     _, course_code, lang_code = callback.data.split(":")
@@ -98,7 +96,6 @@ async def show_payment_info(callback: CallbackQuery):
     course_info = COURSES[course_name][lang]
     price_kgs = course_info["price"]
 
-    # Цены в других валютах
     price_rub = {
         "АВА-терапия": 3200,
         "Дефектология": 2300,
@@ -137,41 +134,5 @@ async def show_payment_info(callback: CallbackQuery):
         qr_image,
         caption=caption,
         reply_markup=kb
-    )
-    await callback.answer()
-
-@router.callback_query(F.data.startswith("lang:"))
-async def show_payment_info(callback: CallbackQuery):
-    _, course_code, lang_code = callback.data.split(":")
-
-    course_reverse = {
-        "ava": "АВА-терапия",
-        "defekt": "Дефектология",
-        "sensor": "Сенсорная интеграция"
-    }
-
-    lang_reverse = {
-        "ru": "Русский",
-        "kg": "Кыргызский"
-    }
-
-    course_name = course_reverse[course_code]
-    lang = lang_reverse[lang_code]
-    course_info = COURSES[course_name][lang]
-    price = course_info["price"]
-
-    user_selected_course[callback.from_user.id] = (course_name, lang)
-
-    qr_image = FSInputFile(QR_PATH)
-
-    await callback.message.answer_photo(
-        qr_image,
-        caption=(
-            f"📘 <b>{course_name} ({lang})</b>\n\n"
-            f"💰 Стоимость курса: <b>{price} сом</b>\n"
-            f"📱 Оплатите на номер MБанк: <code>{MBANK_PHONE}</code>\n\n"
-            "После оплаты отправьте фото чека в этот чат. Администратор проверит платёж и предоставит доступ.\n\n"
-            f"{DISCLAIMER}"
-        )
     )
     await callback.answer()
